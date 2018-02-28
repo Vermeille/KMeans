@@ -9,4 +9,4 @@ class AIC {
     }
 }
 
-exports.AIC = AIC;
+module.exports = AIC;

@@ -44,4 +44,4 @@ class BIC {
     }
 }
 
-exports.BIC = BIC;
+module.exports = BIC;
