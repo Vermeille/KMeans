@@ -1,4 +1,6 @@
 var Vector = require('vec');
+var BIC = require('./bic.js');
+var AIC = require('./aic.js');
 
 class KMeans {
     constructor(cs_or_k, data, loss='bic') {
@@ -106,3 +108,75 @@ class KMeans {
 }
 
 exports.KMeans = KMeans;
+
+class KMeansOptimizer {
+    constructor(max_k, tries, data, loss='bic', selector='elbow') {
+        this.maxk = max_k;
+        this.tries = tries;
+        this.data = data;
+        this.loss = loss;
+        this.selector = selector;
+        this.reset();
+    }
+
+    reset() {
+        this.k = 2;
+        this.t = 0;
+        this.kmeans = [0, 0 /* sentinel to have kth as kmeans[k] */];
+    }
+
+    ended() {
+        return this.k == this.maxk && this.t == this.tries;
+    }
+
+    step_try() {
+        var ktry = (new KMeans(this.k, this.data, this.loss)).start();
+        if (this.t == 0) {
+            this.best_try = ktry;
+        } else if (ktry.score > this.best_try.score) {
+            this.best_try = ktry;
+        }
+
+        ++this.t;
+    }
+
+    step() {
+        if (this.t == this.tries) {
+            ++this.k;
+            this.t = 0;
+        }
+
+        this.step_try();
+
+        if (this.t == this.tries) {
+            this.kmeans.push(this.best_try);
+        }
+    }
+
+    progress() {
+        return (this.k * this.tries + this.t) / ((this.maxk + 1) * this.tries) * 100;
+    }
+
+    getRes() {
+        if (this.selector === 'best') {
+            return this.kmeans.slice(2).reduce((best, km) =>
+                    km.score > best.score ? km : best
+            );
+        } else {
+            var best_k = 1;
+            var best_d2 = 0;
+            for (var k = 3; k < this.maxk; ++k) {
+                var d2 = this.kmeans[k - 1].score + this.kmeans[k + 1].score
+                    - 2 * this.kmeans[k].score;
+                if (Math.abs(d2) > best_d2) {
+                    best_k = k;
+                    best_d2 = Math.abs(d2);
+                }
+            }
+            best_k = Math.min(best_k, this.maxk);
+            return this.kmeans[best_k];
+        }
+    }
+}
+
+exports.KMeansOptimizer = KMeansOptimizer;

@@ -1,5 +1,5 @@
 module.exports = {
-  entry: './kmeans.js',
+  entry: './src/kmeans.js',
   output: {
     filename: 'bundle.js'
   }
