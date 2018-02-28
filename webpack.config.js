@@ -1,6 +1,5 @@
 module.exports = {
-  context: path.resolve(__dirname, 'src'),
-  entry: ['./kmeans.js', './xmeans.js'],
+  entry: './index.js',
   output: {
     filename: 'bundle.js'
   }
