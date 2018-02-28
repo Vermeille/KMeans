@@ -22,7 +22,7 @@
   },
   "homepage": "https://github.com/Vermeille/KMeans#readme",
   "dependencies": {
-    "vec": "github:vermeille/Vec"
+    "vec": "github:Vermeille/Vec"
   },
   "devDependencies": {
     "webpack": "^4.0.1",

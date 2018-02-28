@@ -1,5 +1,5 @@
 var Vector = require('vec');
-var KMeans = require('./kmeans.js');
+var { KMeans } = require('./kmeans.js');
 
 class XMeans {
     constructor(data, mink, maxk, loss='aic') {
