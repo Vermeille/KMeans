@@ -1,0 +1,31 @@
+{
+  "name": "kmeans",
+  "version": "1.0.0",
+  "description": "KMeans implementation for browsers",
+  "main": "kmeans.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack --progress -p",
+    "watch": "webpack --progress --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Vermeille/KMeans.git"
+  },
+  "keywords": [
+    "kmeans"
+  ],
+  "author": "Vermeille",
+  "license": "SEE LICENSE IN Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/Vermeille/KMeans/issues"
+  },
+  "homepage": "https://github.com/Vermeille/KMeans#readme",
+  "dependencies": {
+    "vec": "github:vermeille/Vec"
+  },
+  "devDependencies": {
+    "webpack": "^4.0.1",
+    "webpack-cli": "^2.0.9"
+  }
+}
