@@ -12,18 +12,18 @@ class XMeans {
         this.start();
     }
 
-    static scoreParent(c, parentData) {
-        let km1 = new KMeans([c], parentData, this.loss);
+    static scoreParent(c, parentData, loss) {
+        let km1 = new KMeans([c], parentData, loss);
         return km1.start().score;
     }
 
-    static scoreSplit(c, parentData) {
+    static scoreSplit(c, parentData, splitTries, loss) {
         let maxDist = parentData.reduce((dist, d) => {
             return Math.max(dist, Vector.distance(d, c))
         }, 0);
 
         let best = null;
-        for (let i = 0; i < this.splitTries; ++i) {
+        for (let i = 0; i < splitTries; ++i) {
             let disp = Vector.randomUnit(c.length);
 
             let newC1 = c.slice();
@@ -32,7 +32,7 @@ class XMeans {
             let newC2 = c.slice();
             Vector.sub(newC2, disp);
 
-            let km2 = new KMeans([newC1, newC2], parentData, this.loss);
+            let km2 = new KMeans([newC1, newC2], parentData, loss);
             let children;
             try {
                 children = km2.start();
@@ -75,8 +75,10 @@ class XMeans {
                 continue;
             }
 
-            let parentScore = XMeans.scoreParent(centroids[cid], itsData);
-            let children = XMeans.scoreSplit(centroids[cid], itsData);
+            let parentScore = XMeans.scoreParent(
+                    centroids[cid], itsData, this.loss);
+            let children = XMeans.scoreSplit(
+                    centroids[cid], itsData, this.splitTries, this.loss);
             if (parentScore > children.score) {
                 newCentroids.push(centroids[cid]);
                 console.log('NO SPLIT');
