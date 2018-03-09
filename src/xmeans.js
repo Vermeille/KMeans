@@ -1,5 +1,5 @@
-var Vector = require('vec');
-var { KMeans } = require('./kmeans.js');
+const Vector = require('vec');
+const { KMeans } = require('./kmeans.js');
 
 class XMeans {
     constructor(data, mink, maxk, loss='aic', splitTries) {
@@ -13,38 +13,41 @@ class XMeans {
     }
 
     static scoreParent(c, parentData) {
-        var km1 = new KMeans([c], parentData, this.loss);
+        let km1 = new KMeans([c], parentData, this.loss);
         return km1.start().score;
     }
 
     static scoreSplit(c, parentData) {
-        var maxDist = parentData.reduce((dist, d) => {
+        let maxDist = parentData.reduce((dist, d) => {
             return Math.max(dist, Vector.distance(d, c))
         }, 0);
 
-        var best = null;
-        for (var i = 0; i < this.splitTries; ++i) {
-            var disp = Vector.randomUnit(c.length);
+        let best = null;
+        for (let i = 0; i < this.splitTries; ++i) {
+            let disp = Vector.randomUnit(c.length);
 
-            var newC1 = c.slice();
+            let newC1 = c.slice();
             Vector.add(newC1, disp);
 
-            var newC2 = c.slice();
+            let newC2 = c.slice();
             Vector.sub(newC2, disp);
 
-            var km2 = new KMeans([newC1, newC2], parentData, this.loss);
-            var children = km2.start();
-
-            if (!best || children.score > best.score) {
-                best = children;
+            let km2 = new KMeans([newC1, newC2], parentData, this.loss);
+            let children;
+            try {
+                children = km2.start();
+                if (!best || children.score > best.score) {
+                    best = children;
+                }
+            } catch (e) {
             }
         }
-        return best;
+        return best || {score: parseFloat('-Infinity')};
     }
 
     start() {
-        var km = new KMeans(this.mink, this.data, this.loss);
-        var res = km.start();
+        let km = new KMeans(this.mink, this.data, this.loss);
+        let res = km.start();
         this.centroids = res.centroids;
         this.k = this.mink;
         this.best = res;
@@ -57,14 +60,14 @@ class XMeans {
     }
 
     step() {
-        var centroids = this.centroids;
-        var newCentroids = [];
-        for (var cid = 0; cid < centroids.length; ++cid) {
+        let centroids = this.centroids;
+        let newCentroids = [];
+        for (let cid = 0; cid < centroids.length; ++cid) {
             if (newCentroids.length > this.maxk) {
                 break;
             }
 
-            var itsData = this.data.filter((_, i) => {
+            let itsData = this.data.filter((_, i) => {
                 return this.prev.cluster[i] === cid;
             });
 
@@ -72,8 +75,8 @@ class XMeans {
                 continue;
             }
 
-            var parentScore = XMeans.scoreParent(centroids[cid], itsData);
-            var children = XMeans.scoreSplit(centroids[cid], itsData);
+            let parentScore = XMeans.scoreParent(centroids[cid], itsData);
+            let children = XMeans.scoreSplit(centroids[cid], itsData);
             if (parentScore > children.score) {
                 newCentroids.push(centroids[cid]);
                 console.log('NO SPLIT');
@@ -84,8 +87,8 @@ class XMeans {
             }
         }
 
-        var km = new KMeans(newCentroids, this.data, this.loss);
-        var res = km.start();
+        let km = new KMeans(newCentroids, this.data, this.loss);
+        let res = km.start();
         console.log(res.score);
         if (res.score > this.best.score) {
             this.best = res;

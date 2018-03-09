@@ -3,7 +3,7 @@ var BIC = require('./bic.js');
 var AIC = require('./aic.js');
 
 class KMeans {
-    constructor(cs_or_k, data, loss='bic') {
+    constructor(cs_or_k, data, loss='bic', guardMax=10000) {
         if (cs_or_k instanceof Array) {
             this.centroids = cs_or_k;
             this.k = cs_or_k.length;
@@ -16,6 +16,7 @@ class KMeans {
         }
         this.data = data;
         this.loss = loss;
+        this.guardMax = guardMax;
     }
 
     assignAll(clusters, points, cs) {
@@ -91,11 +92,17 @@ class KMeans {
             kmeans.cluster.push(0);
         }
 
-        while (true) {
+        let guard = 0;
+        while (guard < this.guardMax) {
             if (this.assignAll(kmeans.cluster, data, kmeans.centroids)) {
                 break;
             }
             this.computeCentroids(kmeans.cluster, data, kmeans.centroids);
+            ++guard;
+        }
+        if (guard == this.guardMax) {
+            throw new Error(
+                    `KMeans did not converge in ${this.guardMax} iterations`);
         }
         kmeans.score = this.score(kmeans.cluster, data, kmeans.centroids);
         kmeans.closest = [];
