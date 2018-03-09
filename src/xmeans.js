@@ -2,12 +2,13 @@ var Vector = require('vec');
 var { KMeans } = require('./kmeans.js');
 
 class XMeans {
-    constructor(data, mink, maxk, loss='aic') {
+    constructor(data, mink, maxk, loss='aic', splitTries) {
         this.data = data;
         this.clusters = (new Array(data.length)).fill(0);
         this.mink = mink;
         this.maxk = maxk;
         this.loss = loss;
+        this.splitTries = splitTries || (data[0].length / 2);
         this.start();
     }
 
@@ -22,7 +23,7 @@ class XMeans {
         }, 0);
 
         var best = null;
-        for (var i = 0; i < 100; ++i) {
+        for (var i = 0; i < this.splitTries; ++i) {
             var disp = Vector.randomUnit(c.length);
 
             var newC1 = c.slice();

@@ -21,11 +21,11 @@
     "url": "https://github.com/Vermeille/KMeans/issues"
   },
   "homepage": "https://github.com/Vermeille/KMeans#readme",
-  "dependencies": {
-    "vec": "github:Vermeille/Vec"
-  },
   "devDependencies": {
     "webpack": "^4.0.1",
     "webpack-cli": "^2.0.9"
+  },
+  "dependencies": {
+    "vec": "github:vermeille/vec"
   }
 }
