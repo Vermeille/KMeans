@@ -2,22 +2,23 @@ const Vector = require('vec');
 const { KMeans } = require('./kmeans.js');
 
 class XMeans {
-    constructor(data, mink, maxk, loss='aic', splitTries) {
+    constructor(data, mink, maxk, loss='aic', splitTries, guardMax=100) {
         this.data = data;
         this.clusters = (new Array(data.length)).fill(0);
         this.mink = mink;
         this.maxk = maxk;
         this.loss = loss;
         this.splitTries = splitTries || (data[0].length / 2);
+        this.guardMax = guardMax;
         this.start();
     }
 
-    static scoreParent(c, parentData, loss) {
+    static scoreParent(c, parentData, loss, guardMax) {
         let km1 = new KMeans([c], parentData, loss);
         return km1.start().score;
     }
 
-    static scoreSplit(c, parentData, splitTries, loss) {
+    static scoreSplit(c, parentData, splitTries, loss, guardMax) {
         let maxDist = parentData.reduce((dist, d) => {
             return Math.max(dist, Vector.distance(d, c))
         }, 0);
@@ -32,7 +33,7 @@ class XMeans {
             let newC2 = c.slice();
             Vector.sub(newC2, disp);
 
-            let km2 = new KMeans([newC1, newC2], parentData, loss);
+            let km2 = new KMeans([newC1, newC2], parentData, loss, guardMax);
             let children;
             try {
                 children = km2.start();
@@ -46,7 +47,7 @@ class XMeans {
     }
 
     start() {
-        let km = new KMeans(this.mink, this.data, this.loss);
+        let km = new KMeans(this.mink, this.data, this.loss, this.guardMax);
         let res = km.start();
         this.centroids = res.centroids;
         this.k = this.mink;
@@ -89,8 +90,13 @@ class XMeans {
             }
         }
 
-        let km = new KMeans(newCentroids, this.data, this.loss);
-        let res = km.start();
+        let km = new KMeans(newCentroids, this.data, this.loss, this.guardMax);
+        let res;
+        try {
+            res = km.start();
+        } catch (e) {
+            res = { score: parseFloat('-Infinity') };
+        }
         console.log(res.score);
         if (res.score > this.best.score) {
             this.best = res;

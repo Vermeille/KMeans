@@ -3,7 +3,7 @@ let BIC = require('./bic.js');
 let AIC = require('./aic.js');
 
 class KMeans {
-    constructor(cs_or_k, data, loss='bic', guardMax=10000) {
+    constructor(cs_or_k, data, loss='bic', guardMax=100) {
         if (cs_or_k instanceof Array) {
             this.centroids = cs_or_k;
             this.k = cs_or_k.length;
