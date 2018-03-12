@@ -95,7 +95,8 @@ class XMeans {
         try {
             res = km.start();
         } catch (e) {
-            res = { score: parseFloat('-Infinity') };
+            this.done = true;
+            return;
         }
         console.log(res.score);
         if (res.score > this.best.score) {
