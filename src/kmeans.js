@@ -3,7 +3,7 @@ let BIC = require('./bic.js');
 let AIC = require('./aic.js');
 
 class KMeans {
-    constructor(cs_or_k, data, loss='bic', guardMax=100) {
+    constructor(cs_or_k, data, loss = 'bic', guardMax = 100) {
         if (cs_or_k instanceof Array) {
             this.centroids = cs_or_k;
             this.k = cs_or_k.length;
@@ -11,7 +11,9 @@ class KMeans {
             this.k = cs_or_k;
             this.centroids = [];
             for (let i = 0; i < this.k; ++i) {
-                this.centroids.push(data[Math.floor(Math.random() * data.length)]);
+                this.centroids.push(
+                    data[Math.floor(Math.random() * data.length)],
+                );
             }
         }
         this.data = data;
@@ -68,10 +70,11 @@ class KMeans {
         } else if (this.loss === 'aic') {
             return AIC.compute(clusters, points, cs);
         } else {
+            // MSE
             let s = Vector.zero(cs.length);
             let count = Vector.zero(cs.length);
             for (let i = 0; i < points.length; ++i) {
-                s[clusters[i]] += Vector.distance(points[i], cs[clusters[i]]);
+                s[clusters[i]] += Vector.sqDist(points[i], cs[clusters[i]]);
                 ++count[clusters[i]];
             }
             for (let i = 0; i < count.length; ++i) {
@@ -102,7 +105,8 @@ class KMeans {
         }
         if (guard == this.guardMax) {
             throw new Error(
-                    `KMeans did not converge in ${this.guardMax} iterations`);
+                `KMeans did not converge in ${this.guardMax} iterations`,
+            );
         }
         kmeans.score = this.score(kmeans.cluster, data, kmeans.centroids);
         kmeans.closest = [];
@@ -111,13 +115,12 @@ class KMeans {
         }
         return kmeans;
     }
-
 }
 
 exports.KMeans = KMeans;
 
 class KMeansOptimizer {
-    constructor(max_k, tries, data, loss='bic', selector='elbow') {
+    constructor(max_k, tries, data, loss = 'bic', selector = 'elbow') {
         this.maxk = max_k;
         this.tries = tries;
         this.data = data;
@@ -139,9 +142,9 @@ class KMeansOptimizer {
     step_try() {
         let ktry;
         try {
-            ktry = (new KMeans(this.k, this.data, this.loss)).start();
+            ktry = new KMeans(this.k, this.data, this.loss).start();
         } catch (e) {
-            ktry = { score: parseFloat('-Infinity') };
+            ktry = {score: parseFloat('-Infinity')};
         }
         if (this.t == 0) {
             this.best_try = ktry;
@@ -166,20 +169,26 @@ class KMeansOptimizer {
     }
 
     progress() {
-        return (this.k * this.tries + this.t) / ((this.maxk + 1) * this.tries) * 100;
+        return (
+            (this.k * this.tries + this.t) /
+            ((this.maxk + 1) * this.tries) *
+            100
+        );
     }
 
     getRes() {
         if (this.selector === 'best') {
-            return this.kmeans.slice(2).reduce((best, km) =>
-                    km.score > best.score ? km : best
-            );
+            return this.kmeans
+                .slice(2)
+                .reduce((best, km) => (km.score > best.score ? km : best));
         } else {
             let best_k = 1;
             let best_d2 = 0;
             for (let k = 3; k < this.maxk; ++k) {
-                let d2 = this.kmeans[k - 1].score + this.kmeans[k + 1].score
-                    - 2 * this.kmeans[k].score;
+                let d2 =
+                    this.kmeans[k - 1].score +
+                    this.kmeans[k + 1].score -
+                    2 * this.kmeans[k].score;
                 if (Math.abs(d2) > best_d2) {
                     best_k = k;
                     best_d2 = Math.abs(d2);

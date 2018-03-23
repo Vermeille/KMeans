@@ -10,13 +10,13 @@ class BIC {
         var K = centroids.length;
         var M = data[0].length;
         var s = data.reduce((tot, d, i) => {
-                return tot + Vector.distance(d, centroids[clusters[i]]);
+            return tot + Vector.sqDist(d, centroids[clusters[i]]);
         }, 0);
         return s / (M * (R - K));
     }
 
     static _sizeOfCluster(clusters, i) {
-        return clusters.reduce((tot, val) => val === i ? tot + 1 : tot, 0);
+        return clusters.reduce((tot, val) => (val === i ? tot + 1 : tot), 0);
     }
 
     static _loglikelihood(clusters, data, centroids) {
@@ -30,8 +30,8 @@ class BIC {
             t1 += Rn * Math.log(Rn);
         }
         var t2 = R * Math.log(R);
-        var t3 = (R * M) / 2 * Math.log(2 * Math.PI * variance);
-        var t4 = (M * (R - K)) / 2;
+        var t3 = R * M / 2 * Math.log(2 * Math.PI * variance);
+        var t4 = M * (R - K) / 2;
         return t1 - t2 - t3 - t4;
     }
 

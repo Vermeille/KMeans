@@ -1,14 +1,14 @@
 const Vector = require('vec');
-const { KMeans } = require('./kmeans.js');
+const {KMeans} = require('./kmeans.js');
 
 class XMeans {
-    constructor(data, mink, maxk, loss='aic', splitTries, guardMax=100) {
+    constructor(data, mink, maxk, loss = 'aic', splitTries, guardMax = 100) {
         this.data = data;
-        this.clusters = (new Array(data.length)).fill(0);
+        this.clusters = new Array(data.length).fill(0);
         this.mink = mink;
         this.maxk = maxk;
         this.loss = loss;
-        this.splitTries = splitTries || (data[0].length / 2);
+        this.splitTries = splitTries || data[0].length / 2;
         this.guardMax = guardMax;
         this.start();
     }
@@ -19,13 +19,16 @@ class XMeans {
     }
 
     static scoreSplit(c, parentData, splitTries, loss, guardMax) {
-        let maxDist = parentData.reduce((dist, d) => {
-            return Math.max(dist, Vector.distance(d, c))
-        }, 0);
+        let maxDist = Math.sqrt(
+            parentData.reduce((dist, d) => {
+                return Math.max(dist, Vector.sqDist(d, c));
+            }, 0),
+        );
 
         let best = null;
         for (let i = 0; i < splitTries; ++i) {
             let disp = Vector.randomUnit(c.length);
+            Vector.mul(disp, 0.5 * maxDist);
 
             let newC1 = c.slice();
             Vector.add(newC1, disp);
@@ -40,8 +43,7 @@ class XMeans {
                 if (!best || children.score > best.score) {
                     best = children;
                 }
-            } catch (e) {
-            }
+            } catch (e) {}
         }
         return best || {score: parseFloat('-Infinity')};
     }
@@ -77,9 +79,16 @@ class XMeans {
             }
 
             let parentScore = XMeans.scoreParent(
-                    centroids[cid], itsData, this.loss);
+                centroids[cid],
+                itsData,
+                this.loss,
+            );
             let children = XMeans.scoreSplit(
-                    centroids[cid], itsData, this.splitTries, this.loss);
+                centroids[cid],
+                itsData,
+                this.splitTries,
+                this.loss,
+            );
             if (parentScore > children.score) {
                 newCentroids.push(centroids[cid]);
                 console.log('NO SPLIT');
@@ -108,8 +117,12 @@ class XMeans {
         this.k = centroids.length;
     }
 
-    getRes() { return this.best; }
-    progress() { return (this.k / this.maxk) * 100; }
+    getRes() {
+        return this.best;
+    }
+    progress() {
+        return this.k / this.maxk * 100;
+    }
 }
 
 exports.XMeans = XMeans;
